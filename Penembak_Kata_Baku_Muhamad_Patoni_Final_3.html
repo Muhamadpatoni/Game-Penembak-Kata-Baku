@@ -1,0 +1,1331 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Petualangan Penembak Kata Baku - Muhamad Patoni, S.S.</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1c29, #0d1b2a);
+            color: #fff;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #1b263b 0%, #0d1b2a 100%);
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Screen Layouts */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 10;
+            background: rgba(13, 27, 42, 0.95);
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Header UI Game */
+        #game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 5;
+            border-bottom: 2px solid #415a77;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #e0e1dd;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #00f5d4;
+        }
+
+        .lives-container {
+            font-size: 16px;
+            letter-spacing: 2px;
+        }
+
+        /* Card Form & Dialog */
+        .card {
+            background: #1b263b;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #415a77;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 20px;
+            color: #00f5d4;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(0,245,212,0.3);
+        }
+
+        .author-tag {
+            font-size: 13px;
+            color: #f72585;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #e0e1dd;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #415a77;
+            background: #0d1b2a;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #00f5d4;
+            box-shadow: 0 0 8px rgba(0,245,212,0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #7209b7, #f72585);
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(247, 37, 133, 0.4);
+            transition: transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Petunjuk Cara Bermain - tambahan saja */
+        #btn-hint {
+            background: linear-gradient(45deg, #0077b6, #00b4d8);
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.35);
+            margin-top: 8px;
+        }
+
+        #screen-instructions {
+            z-index: 30;
+        }
+
+        .instructions-card {
+            max-height: 88vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .instructions-card h2 {
+            color: #00f5d4;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .instruction-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 13px;
+            line-height: 1.45;
+            color: #e0e1dd;
+        }
+
+        .instruction-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .instruction-icon {
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(0,245,212,0.12);
+            border: 1px solid rgba(0,245,212,0.35);
+            font-size: 15px;
+        }
+
+        .instruction-item b {
+            color: #fff;
+        }
+
+        .instruction-baku {
+            color: #70ff35;
+            font-weight: bold;
+        }
+
+        .instruction-tidak {
+            color: #ffd21f;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .instructions-card { padding: 16px; }
+            .instruction-item { font-size: 12px; }
+        }
+
+        /* Area Game Play */
+        #play-area {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 50px);
+            overflow: hidden;
+        }
+
+        /* Balloon Component */
+        .balloon {
+            position: absolute;
+            width: 130px;
+            height: 150px;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: inset -8px -8px 15px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
+            touch-action: manipulation;
+            will-change: transform;
+            contain: layout;
+        }
+
+        .balloon.small-word {
+            font-size: 12px;
+        }
+
+        /* Tali balon + simpul kecil di bagian bawah balon */
+        .balloon::before {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            top: calc(100% - 1px);
+            left: 50%;
+            width: 3px;
+            height: 90px;
+            background: #ffffff;
+            transform: translateX(-50%);
+            border-radius: 3px;
+            box-shadow: 0 0 2px rgba(255,255,255,0.8);
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            z-index: 1;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: inherit;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+        }
+
+        /* Modal Evaluasi Pembahasan */
+        .eval-container {
+            max-height: 220px;
+            overflow-y: auto;
+            text-align: left;
+            margin: 15px 0;
+            padding-right: 5px;
+        }
+
+        .eval-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #f72585;
+            font-size: 12px;
+        }
+
+        .eval-item.correct {
+            border-left-color: #4cc9f0;
+        }
+
+        .eval-word {
+            font-weight: bold;
+            color: #00f5d4;
+        }
+
+        .eval-desc {
+            color: #e0e1dd;
+            margin-top: 3px;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 18px; }
+            h1 { font-size: 18px; }
+            .balloon { width: 115px; height: 135px; font-size: 14px; }
+            .balloon.small-word { font-size: 11px; }
+            .stat-value { font-size: 13px; }
+        }
+
+        /* =========================================================
+           TAMPILAN BARU - gaya game mobile malam / balon menembak
+           Hanya visual; sistem permainan dan Google Sheets tetap.
+           ========================================================= */
+        body, html {
+            background:
+                radial-gradient(circle at 50% 18%, rgba(33,92,160,.45), transparent 34%),
+                linear-gradient(180deg, #020b22 0%, #062552 52%, #071a2c 100%);
+        }
+
+        #game-container {
+            max-width: 600px;
+            background:
+                radial-gradient(circle at 50% 22%, rgba(22,91,167,.30), transparent 38%),
+                linear-gradient(180deg, #03102d 0%, #073b70 55%, #08251f 100%);
+            box-shadow: 0 0 30px rgba(0,0,0,.9);
+        }
+
+        #game-container::before {
+            content: "✦   ·   ✦      ·   ✧   ·      ✦   ·   ✦      ·   ✧";
+            position: absolute;
+            top: 65px;
+            left: 0;
+            width: 100%;
+            height: 42%;
+            z-index: 0;
+            color: rgba(255,255,255,.82);
+            font-size: 16px;
+            line-height: 54px;
+            letter-spacing: 13px;
+            text-align: center;
+            pointer-events: none;
+            opacity: .75;
+        }
+
+        #game-container::after {
+            content: "";
+            position: absolute;
+            left: -5%;
+            bottom: 0;
+            width: 110%;
+            height: 32%;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(10,70,50,.95) 0 28%, transparent 58%),
+                linear-gradient(165deg, transparent 0 44%, rgba(4,28,55,.85) 45% 57%, transparent 58%),
+                linear-gradient(15deg, transparent 0 43%, rgba(3,30,55,.9) 44% 57%, transparent 58%);
+        }
+
+        #game-header {
+            z-index: 20;
+            padding: 8px 10px;
+            background: rgba(1,8,25,.88);
+            border-bottom: 2px solid #36bdf5;
+        }
+
+        .stat-box {
+            min-width: 54px;
+            padding: 4px 5px;
+            border: 1px solid rgba(100,210,255,.55);
+            border-radius: 10px;
+            background: rgba(2,18,40,.72);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: #fff;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            text-shadow: 0 0 8px rgba(0,245,212,.55);
+        }
+
+        #play-area {
+            top: 58px;
+            height: calc(100% - 58px);
+            z-index: 2;
+            background:
+                radial-gradient(circle at 20% 18%, rgba(255,255,255,.7) 0 1px, transparent 2px),
+                radial-gradient(circle at 75% 25%, rgba(255,255,255,.8) 0 1px, transparent 2px),
+                radial-gradient(circle at 45% 9%, rgba(255,255,255,.7) 0 1px, transparent 2px),
+                linear-gradient(180deg, #03102d 0%, #073b72 68%, #0b4c46 100%);
+        }
+
+        /* Lua crescente */
+        #play-area::before {
+            content: "◐";
+            position: absolute;
+            top: 18px;
+            left: 24px;
+            z-index: 0;
+            color: #fff;
+            font-size: 54px;
+            line-height: 1;
+            transform: rotate(-25deg);
+            text-shadow: 0 0 15px rgba(255,255,255,.65);
+            pointer-events: none;
+        }
+
+        /* Danau / pegunungan sederhana dengan CSS */
+        #play-area::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 29%;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(155deg, transparent 0 34%, #112f52 35% 47%, transparent 48%),
+                linear-gradient(25deg, transparent 0 35%, #173a5e 36% 48%, transparent 49%),
+                linear-gradient(180deg, transparent 0 52%, rgba(8,78,108,.9) 53% 72%, #0a2f30 73%);
+        }
+
+        /* Balon: lebih glossy, tetap menggunakan ukuran dan posisi JS */
+        .balloon {
+            z-index: 5;
+            border: 2px solid rgba(255,255,255,.22);
+            box-shadow:
+                inset -10px -12px 18px rgba(0,0,0,.32),
+                inset 10px 8px 12px rgba(255,255,255,.10),
+                0 7px 18px rgba(0,0,0,.3);
+            text-shadow: 1px 2px 2px rgba(0,0,0,.75);
+        }
+
+        /* TALI PUTIH: sengaja z-index positif agar pasti terlihat */
+        .balloon::before {
+            content: "";
+            position: absolute;
+            z-index: 6;
+            top: calc(100% - 1px);
+            left: 50%;
+            width: 3px;
+            height: 92px;
+            background: #fff !important;
+            border-radius: 3px;
+            transform: translateX(-50%);
+            box-shadow: 0 0 3px rgba(255,255,255,.95);
+            pointer-events: none;
+        }
+
+        .balloon::after {
+            content: "";
+            position: absolute;
+            z-index: 6;
+            bottom: -8px;
+            left: 50%;
+            width: 12px;
+            height: 10px;
+            transform: translateX(-50%);
+            background: inherit;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            pointer-events: none;
+        }
+
+        /* Efek peluru meriam */
+        .cannon-shot {
+            position: absolute;
+            z-index: 8;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0 18%, #ffe066 35%, #ff8c00 70%, transparent 72%);
+            box-shadow: 0 0 8px #fff, 0 0 16px #ffb000, 0 0 24px rgba(255,120,0,.8);
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        /* Ledakan balon saat ditembak */
+        .balloon.pop-effect {
+            animation: balloonPop .22s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes balloonPop {
+            0% { transform: scale(1); opacity: 1; }
+            45% { transform: scale(1.18); opacity: 1; }
+            100% { transform: scale(.15); opacity: 0; }
+        }
+
+        .pop-spark {
+            position: absolute;
+            z-index: 9;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 8px #fff, 0 0 14px #ffd166;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        /* Meriam dekoratif */
+        #game-cannon {
+            position: absolute;
+            z-index: 4;
+            left: 50%;
+            bottom: 42px;
+            width: 128px;
+            height: 155px;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        #game-cannon .cannon-barrel {
+            position: absolute;
+            left: 50%;
+            bottom: 44px;
+            width: 68px;
+            height: 100px;
+            transform: translateX(-50%);
+            border-radius: 34px 34px 12px 12px;
+            background: linear-gradient(90deg,#123e6c,#2877bb,#0d315a);
+            border: 5px solid #d99b28;
+            box-shadow: inset 8px 0 10px rgba(255,255,255,.18), 0 8px 14px rgba(0,0,0,.45);
+        }
+
+        #game-cannon .cannon-orb {
+            position: absolute;
+            left: 50%;
+            bottom: 18px;
+            width: 82px;
+            height: 82px;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #dfb7ff 0 8%, #7b20d0 28%, #3b0877 72%);
+            border: 6px solid #e0a52e;
+            box-shadow: 0 0 18px rgba(145,45,255,.45), inset 6px 5px 10px rgba(255,255,255,.18);
+        }
+
+        #game-cannon .cannon-base {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 116px;
+            height: 38px;
+            transform: translateX(-50%);
+            border-radius: 12px 12px 6px 6px;
+            background: linear-gradient(#7b4a1d,#3a2413);
+            border: 3px solid #d99b28;
+        }
+
+        #game-hint {
+            position: absolute;
+            z-index: 7;
+            left: 50%;
+            bottom: 205px;
+            transform: translateX(-50%);
+            width: min(92%, 520px);
+            padding: 9px 12px;
+            border: 1px solid #25bff3;
+            border-radius: 10px;
+            background: rgba(1,13,32,.84);
+            color: #fff;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(0,180,255,.18);
+            pointer-events: none;
+        }
+
+        #game-hint b {
+            color: #70ff35;
+        }
+
+        #game-hint span {
+            color: #ffd21f;
+        }
+
+        @media (max-width: 480px) {
+            #game-header { padding: 6px 4px; }
+            .stat-box { min-width: 45px; padding: 3px; }
+            .stat-label { font-size: 8px; }
+            .stat-value { font-size: 12px; }
+            #game-cannon { transform: translateX(-50%) scale(.78); transform-origin: bottom center; bottom: 18px; }
+            #game-hint { bottom: 145px; font-size: 11px; width: 94%; }
+            .balloon::before { height: 82px; width: 3px; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Header Game UI (Termasuk Indikator Nyawa) -->
+    <div id="game-header">
+        <div class="stat-box">
+            <span class="stat-label">Pemain</span>
+            <span class="stat-value" id="disp-player">-</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Nyawa</span>
+            <span class="lives-container" id="disp-lives">❤️❤️❤️</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Level</span>
+            <span class="stat-value" id="disp-level">1/8</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Balon</span>
+            <span class="stat-value" id="disp-progress">0/30</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Skor</span>
+            <span class="stat-value" id="disp-score">0</span>
+        </div>
+    </div>
+
+    <!-- Screen 1: Start Register -->
+    <div id="screen-start" class="screen">
+        <div class="card">
+            <h1>PETUALANGAN PENEMBAK KATA BAKU</h1>
+            <div class="author-tag">Pengembang: Muhamad Patoni, S.S.</div>
+            
+            <form id="form-register" onsubmit="handleStart(event)">
+                <div class="form-group">
+                    <label for="input-nama">Nama Lengkap Siswa:</label>
+                    <input type="text" id="input-nama" required placeholder="Masukkan nama lengkapmu..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="select-kelas">Pilihan Kelas:</label>
+                    <select id="select-kelas" required>
+                        <option value="" disabled selected>-- Pilih Kelas --</option>
+                        <option value="9-G">Kelas 9-G</option>
+                        <option value="9-H">Kelas 9-H</option>
+                        <option value="9-I">Kelas 9-I</option>
+                        <option value="9-J">Kelas 9-J</option>
+                        <option value="9-K">Kelas 9-K</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">🚀 MULAI PETUALANGAN</button>
+                <button type="button" id="btn-hint" class="btn" onclick="openInstructions()">📖 PETUNJUK CARA BERMAIN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tambahan: Layar Petunjuk Cara Bermain -->
+    <div id="screen-instructions" class="screen hidden">
+        <div class="card instructions-card">
+            <h2>📖 PETUNJUK CARA BERMAIN</h2>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">🎯</div>
+                <div><b>Tugasmu:</b> tembak balon yang berisi <span class="instruction-baku">KATA BAKU</span>.</div>
+            </div>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">🚫</div>
+                <div><b>Jangan tembak</b> balon yang berisi <span class="instruction-tidak">KATA TIDAK BAKU</span>. Biarkan balon tersebut lewat.</div>
+            </div>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">❤️</div>
+                <div><b>Nyawa:</b> tersedia 3 nyawa pada setiap level. Menembak kata tidak baku atau membiarkan kata baku lewat mengurangi 1 nyawa.</div>
+            </div>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">⭐</div>
+                <div><b>Skor:</b> setiap kata baku yang berhasil ditembak mendapat <b>+10 poin</b>.</div>
+            </div>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">🎈</div>
+                <div><b>Cara menembak:</b> klik atau sentuh balon yang ingin ditembak saat balon bergerak dari bawah ke atas.</div>
+            </div>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">🏆</div>
+                <div><b>Tujuan:</b> selesaikan permainan hingga Level 8.</div>
+            </div>
+
+            <div class="instruction-item">
+                <div class="instruction-icon">💡</div>
+                <div><b>Tips:</b> baca kata pada balon dengan teliti sebelum menembak agar tidak kehilangan nyawa.</div>
+            </div>
+
+            <button type="button" class="btn" onclick="closeInstructions()">✅ SAYA PAHAM</button>
+        </div>
+    </div>
+
+    <!-- Screen 2: Layar Arena Game -->
+    <div id="play-area">
+        <div id="game-cannon" aria-hidden="true">
+            <div class="cannon-barrel"></div>
+            <div class="cannon-orb"></div>
+            <div class="cannon-base"></div>
+        </div>
+        <div id="game-hint" aria-hidden="true">
+            Tembak kata yang <b>BAKU</b> dan hindari yang <span>TIDAK BAKU!</span>
+        </div>
+    </div>
+
+    <!-- Screen 3: Result & KBBI Explanation -->
+    <div id="screen-result" class="screen hidden">
+        <div class="card">
+            <h1 id="result-title">EVALUASI LEVEL</h1>
+            <p id="result-subtitle" style="font-size: 13px; color: #aaa; margin-top: 5px;">Ringkasan Hasil Permainan</p>
+            
+            <div style="margin: 12px 0;">
+                <span style="font-size: 14px;">Skor Akhir: </span>
+                <span id="result-score" style="font-size: 24px; font-weight: bold; color: #00f5d4;">0</span>
+            </div>
+
+            <div id="eval-section">
+                <p style="font-size: 12px; font-weight: bold; text-align: left; color: #f72585;">
+                    💡 Catatan Pembahasan Kata (Kesalahan Kamu):
+                </p>
+                <div class="eval-container" id="eval-list"></div>
+            </div>
+
+            <button id="btn-next" class="btn" onclick="nextAction()">LANJUTKAN PETUALANGAN ▶</button>
+            <button id="btn-exit" class="btn hidden" onclick="exitToStart()" style="background: linear-gradient(45deg, #415a77, #1b263b); margin-top: 8px;">🚪 KELUAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // ⚙️ KONFIGURASI DATABASE GOOGLE SHEETS
+    // ==========================================
+    // Tempelkan URL Google Apps Script milik Bapak di sini jika sudah ada:
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzL302SHexU-zFPZPprxA-0P2IDIX6OS6WlxOfk-hfx4xcKTSK7iI3OhdIraVY0PsFxDQ/exec";
+
+    // Database Kata Baku (Level 1 - 8)
+    const WORD_DATABASE = {
+        1: [
+            { baku: "Kualitas", tidak: "Kwalitas", ket: "Sesuai KBBI, bentuk baku adalah 'Kualitas' (menggunakan huruf 'u')." },
+            { baku: "Napas", tidak: "Nafas", ket: "Dalam KBBI, kata yang baku menggunakan huruf 'p' yaitu 'Napas'." },
+            { baku: "Dibersihkan", tidak: "Di bersihkan", ket: "Awalan 'di-' yang menyatakan kata kerja pasif ditulis serangkai/digabung." },
+            { baku: "Izin", tidak: "Ijin", ket: "Kosakata baku menurut KBBI adalah 'Izin' (menggunakan huruf 'z')." },
+            { baku: "Februari", tidak: "Pebruari", ket: "Nama bulan baku adalah 'Februari' (menggunakan huruf 'F')." },
+            { baku: "Aktif", tidak: "Aktip", ket: "Kata baku serapan yang tepat adalah 'Aktif' (menggunakan huruf 'f')." },
+            { baku: "Dikirim", tidak: "Di kirim", ket: "Kata kerja pasif dengan awalan 'di-' harus disambung." },
+            { baku: "Zaman", tidak: "Jaman", ket: "Sesuai KBBI, kata baku yang benar adalah 'Zaman' (dengan huruf 'Z')." }
+        ],
+        2: [
+            { baku: "Jadwal", tidak: "Jadual", ket: "Penulisan baku yang benar dalam KBBI adalah 'Jadwal' (menggunakan 'w')." },
+            { baku: "Paham", tidak: "Faham", ket: "Bentuk baku menurut KBBI adalah 'Paham' (menggunakan huruf 'P')." },
+            { baku: "Menyukseskan", tidak: "Mensukseskan", ket: "Awalan me- bertemu kata berawalan 's' (sukses) menglebur menjadi 'ny'." },
+            { baku: "Sistem", tidak: "Sistim", ket: "Kata serapan baku adalah 'Sistem' (menggunakan huruf 'e')." },
+            { baku: "Analisis", tidak: "Analisa", ket: "Dalam KBBI, kata yang baku adalah analisis, bukan analisa." },
+            { baku: "Di samping", tidak: "Disamping", ket: "Kata depan 'di' yang menunjukkan petunjuk tempat ditulis terpisah." },
+            { baku: "Merek", tidak: "Merk", ket: "Kata baku yang tepat sesuai KBBI adalah 'Merek' (2 suku kata)." },
+            { baku: "Bercermin", tidak: "Becermin", ket: "Awalan ber- bertemu kata cermin tetap mempertahankan huruf 'r'." }
+        ],
+        3: [
+            { baku: "Menyejahterakan", tidak: "Mensejahterakan", ket: "Awalan me- pada kata dasar 'sejahtera' luluh menjadi 'ny'." },
+            { baku: "Menandatangani", tidak: "Mentandatangani", ket: "Awalan me- pada kata dasar berawalan 't' (tanda) luluh menjadi 'n'." },
+            { baku: "Konkret", tidak: "Konkrit", ket: "Penulisan baku menurut KBBI adalah 'Konkret' (menggunakan huruf 'e')." },
+            { baku: "Cenderamata", tidak: "Cinderamata", ket: "Kata baku yang terdaftar di KBBI adalah 'Cenderamata' (dengan 'e')." },
+            { baku: "Memprotes", tidak: "Memerotes", ket: "Gugus konsonan pada kata dasar 'protes' tidak luluh saat diberi awalan me-." },
+            { baku: "Menyerahterimakan", tidak: "Menserahterimakan", ket: "Awalan me- bertemu kata dasar 'serah' luluh menjadi 'ny'." },
+            { baku: "Di atas", tidak: "Diatas", ket: "Kata depan 'di' penunjuk lokasi/tempat ditulis terpisah." },
+            { baku: "Mengkristal", tidak: "Mengeristal", ket: "Gugus konsonan 'kr' pada kata dasar 'kristal' tidak luluh." }
+        ],
+        4: [
+            { baku: "Menyebarluaskan", tidak: "Mensebarluaskan", ket: "Awalan me- bertemu kata dasar 'sebar' luluh menjadi 'ny'." },
+            { baku: "Rapi", tidak: "Rapih", ket: "Kata baku menurut KBBI adalah 'Rapi' (tanpa huruf 'h' di akhir)." },
+            { baku: "Kreatif", tidak: "Kreatip", ket: "Kosakata baku serapan yang tepat adalah 'Kreatif' (dengan 'f')." },
+            { baku: "Antre", tidak: "Antri", ket: "Penulisan baku sesuai KBBI adalah 'Antre' (menggunakan huruf 'e')." },
+            { baku: "Atlet", tidak: "Atlit", ket: "Penulisan baku sesuai KBBI adalah 'Atlet' (menggunakan huruf 'e')." },
+            { baku: "Beterbangan", tidak: "Berterbangan", ket: "Awalan ber- bertemu kata dasar berawalan 'ter' melebur menjadi 'be-'." },
+            { baku: "Mewalikotakan", tidak: "Mewali kotakan", ket: "Kata majemuk yang mendapat apitan (me-kan) ditulis serangkai." },
+            { baku: "Koordinasi", tidak: "Koordinir", ket: "Akhiran -ir diubah menjadi bentuk baku nomina '-asi' (Koordinasi)." }
+        ],
+        5: [
+            { baku: "Lokalisasi", tidak: "Lokalisir", ket: "Akhiran serapan -isir bentuk bakunya adalah -isasi." },
+            { baku: "Menerjemahkan", tidak: "Menterjemahkan", ket: "Awalan me- pada kata dasar berawalan 't' (terjemah) luluh menjadi 'n'." },
+            { baku: "Praktik", tidak: "Praktek", ket: "Penulisan kata baku yang benar adalah 'Praktik' (menggunakan 'i')." },
+            { baku: "Ustaz", tidak: "Ustad", ket: "Kata serapan baku menurut KBBI berakhir dengan huruf 'z' (Ustaz)." },
+            { baku: "Dihancurleburkan", tidak: "Di hancurleburkan", ket: "Kata majemuk berapitan imbuhan ditulis serangkai tanpa spasi." },
+            { baku: "Feodalisme", tidak: "Feodalisem", ket: "Bentuk akhiran serapan baku adalah '-isme' (Feodalisme)." },
+            { baku: "Memerhatikan", tidak: "Memperhatikan", ket: "Kata dasar 'perhati' berawalan p luluh menjadi 'm' (Memerhatikan)." },
+            { baku: "Kuitansi", tidak: "Kwitansi", ket: "Penulisan kata baku menurut KBBI adalah 'Kuitansi' (dengan 'ui')." }
+        ],
+        6: [
+            { baku: "Mengoordinasikan", tidak: "Mengkoordinasikan", ket: "Awalan meng- pada kata dasar berawalan 'k' (koordinasi) luluh." },
+            { baku: "Apotek", tidak: "Apotik", ket: "Kata baku yang benar sesuai KBBI adalah 'Apotek' (menggunakan 'e')." },
+            { baku: "Silakan", tidak: "Silahkan", ket: "Kata baku menurut KBBI adalah 'Silakan' (tanpa huruf 'h')." },
+            { baku: "Utang", tidak: "Hutang", ket: "Penulisan baku menurut KBBI adalah 'Utang' (tanpa huruf 'h')." },
+            { baku: "Netralisasi", tidak: "Netralisir", ket: "Bentuk nomina baku kata serapan adalah akhiran -isasi." },
+            { baku: "November", tidak: "Nopember", ket: "Nama bulan baku dalam KBBI menggunakan huruf 'v' (November)." },
+            { baku: "Cedera", tidak: "Cidera", ket: "Penulisan baku yang benar sesuai KBBI adalah 'Cedera' (dengan 'e')." },
+            { baku: "Memesona", tidak: "Mempesona", ket: "Awalan me- pada kata dasar berawalan 'p' (pesona) luluh menjadi 'm'." }
+        ],
+        7: [
+            { baku: "Mengomunikasikan", tidak: "Mengkomunikasikan", ket: "Awalan meng- pada kata dasar berawalan 'k' (komunikasi) luluh." },
+            { baku: "Memercayai", tidak: "Mempercayai", ket: "Awalan me- pada kata dasar berawalan 'p' (percaya) luluh menjadi 'm'." },
+            { baku: "Diakomodasi", tidak: "Diakomodir", ket: "Penulisan verba pasif serapan baku menggunakan '-asi'." },
+            { baku: "Dilegalisasi", tidak: "Dilegalisir", ket: "Bentuk pasif kata kerja serapan baku menggunakan '-isasi'." },
+            { baku: "Praktik", tidak: "Praktek", ket: "Kata baku yang diakui dalam KBBI adalah 'Praktik'." },
+            { baku: "Cenderamata", tidak: "Cinderamata", ket: "Bentuk kata baku KBBI adalah 'Cenderamata'." },
+            { baku: "Risiko", tidak: "Resiko", ket: "Penulisan baku dalam KBBI adalah 'Risiko' (menggunakan huruf 'i')." },
+            { baku: "Imbau", tidak: "Himbau", ket: "Bentuk baku menurut KBBI adalah 'Imbau' (tanpa huruf 'h')." }
+        ],
+        8: [
+            { baku: "Dimungkiri", tidak: "Dipungkiri", ket: "Kata dasar 'mungkir' dibentuk pasif menjadi 'Dimungkiri'." },
+            { baku: "Komplet", tidak: "Komplit", ket: "Penulisan baku dalam KBBI adalah 'Komplet' (menggunakan 'e')." },
+            { baku: "Memproses", tidak: "Memeroses", ket: "Gugus konsonan 'pr' pada 'proses' tidak luluh dan tidak ditambah 'e'." },
+            { baku: "Karakterisasi", tidak: "Karakterisir", ket: "Bentuk nomina serapan baku menggunakan '-isasi'." },
+            { baku: "Praktik", tidak: "Praktek", ket: "Penulisan baku yang konsisten dalam KBBI adalah 'Praktik'." },
+            { baku: "Mengubah", tidak: "Merubah", ket: "Kata dasar 'ubah' mendapat awalan meng- menjadi 'Mengubah'." },
+            { baku: "Memengaruhi", tidak: "Mempengaruhi", ket: "Awalan me- pada kata dasar 'pengaruh' luluh menjadi 'm'." },
+            { baku: "Nasihat", tidak: "Nasehat", ket: "Penulisan baku menurut KBBI adalah 'Nasihat' (menggunakan huruf 'i')." }
+        ]
+    };
+
+    // State Game
+    let gameState = {
+        playerNama: '',
+        playerKelas: '',
+        currentLevel: 1,
+        lives: 3,
+        score: 0,
+        totalSpawned: 0,
+        targetBalloons: 30,
+        activeBalloons: [],
+        spawnTimer: null,
+        recentWords: [],
+        wrongEvaluations: [],
+        isPlaying: false
+    };
+
+    // DOM Elements
+    const screens = {
+        start: document.getElementById('screen-start'),
+        result: document.getElementById('screen-result')
+    };
+    const playArea = document.getElementById('play-area');
+
+    // Web Audio Synthesizer
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playSound(freq, type, duration) {
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {}
+    }
+
+    // Update Tampilan Nyawa ❤️
+    function updateLivesUI() {
+        let hearts = '';
+        for (let i = 0; i < 3; i++) {
+            hearts += (i < gameState.lives) ? '❤️' : '🖤';
+        }
+        document.getElementById('disp-lives').innerText = hearts;
+    }
+
+    // Tambahan: Petunjuk Cara Bermain
+    function openInstructions() {
+        document.getElementById('screen-instructions').classList.remove('hidden');
+    }
+
+    function closeInstructions() {
+        document.getElementById('screen-instructions').classList.add('hidden');
+    }
+
+    // Handle Start Game
+    function handleStart(e) {
+        e.preventDefault();
+        initAudio();
+
+        const nama = document.getElementById('input-nama').value.trim();
+        const kelas = document.getElementById('select-kelas').value;
+
+        if (!nama || !kelas) return;
+
+        gameState.playerNama = nama;
+        gameState.playerKelas = kelas;
+        gameState.currentLevel = 1;
+        gameState.score = 0;
+
+        document.getElementById('disp-player').innerText = `${nama} (${kelas})`;
+        screens.start.classList.add('hidden');
+
+        startLevel(1);
+    }
+
+    // Mulai Level Game
+    function startLevel(lvl) {
+        gameState.currentLevel = lvl;
+        gameState.lives = 3; // Reset Nyawa jadi 3 setiap level
+        gameState.totalSpawned = 0;
+        gameState.targetBalloons = (lvl <= 4) ? 30 : 40;
+        gameState.activeBalloons = [];
+        gameState.wrongEvaluations = [];
+        gameState.recentWords = [];
+        gameState.isPlaying = true;
+
+        // UI Header Updates
+        document.getElementById('disp-level').innerText = `${lvl}/8`;
+        document.getElementById('disp-progress').innerText = `0/${gameState.targetBalloons}`;
+        document.getElementById('disp-score').innerText = gameState.score;
+        updateLivesUI();
+
+        // Clear Play Screen
+        playArea.innerHTML = '';
+        screens.result.classList.add('hidden');
+        document.getElementById('btn-exit').classList.add('hidden');
+
+        if (gameState.spawnTimer) clearInterval(gameState.spawnTimer);
+        gameState.spawnTimer = setInterval(spawnBalloon, 2200);
+    }
+
+    // Spawn Balon
+    function spawnBalloon() {
+        if (!gameState.isPlaying) return;
+
+        if (gameState.totalSpawned >= gameState.targetBalloons) {
+            if (gameState.activeBalloons.length === 0) {
+                finishLevel(true);
+            }
+            return;
+        }
+
+        const pool = WORD_DATABASE[gameState.currentLevel];
+        let availablePairs = pool.filter(pair => !gameState.recentWords.includes(pair.baku));
+        if (availablePairs.length === 0) {
+            gameState.recentWords = [];
+            availablePairs = pool;
+        }
+
+        const pairChoice = availablePairs[Math.floor(Math.random() * availablePairs.length)];
+        gameState.recentWords.push(pairChoice.baku);
+        if (gameState.recentWords.length > 4) gameState.recentWords.shift();
+
+        const isBaku = Math.random() < 0.5;
+        const wordText = isBaku ? pairChoice.baku : pairChoice.tidak;
+
+        gameState.totalSpawned++;
+        document.getElementById('disp-progress').innerText = `${gameState.totalSpawned}/${gameState.targetBalloons}`;
+
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+
+        const smallWords = [
+            "Menandatangani",
+            "Mentandatangani",
+            "Menyerahterimakan",
+            "Menserahterimakan",
+            "Mensebarluaskan",
+            "Menyebarluaskan",
+            "Menterjemahkan",
+            "Menerjemahkan",
+            "Dihancurleburkan",
+            "Di hancurleburkan",
+            "Mengkoordinasikan",
+            "Mengoordinasikan",
+            "Mengkomunikasikan",
+            "Mengomunikasikan"
+        ];
+
+        if (smallWords.includes(wordText)) {
+            balloon.classList.add('small-word');
+        }
+
+        balloon.innerText = wordText;
+
+        const colors = ['#c1121f', '#7b2cbf', '#1d3557', '#006d77', '#005f73', '#9d0208', '#6a040f'];
+        const bg = colors[Math.floor(Math.random() * colors.length)];
+        balloon.style.backgroundColor = bg;
+        balloon.style.borderColor = bg;
+
+        const maxLeft = playArea.clientWidth - 95;
+        const startX = Math.max(10, Math.floor(Math.random() * maxLeft));
+        balloon.style.left = `${startX}px`;
+        balloon.style.bottom = `-125px`;
+        balloon.style.transform = 'translate3d(0, 0, 0)';
+
+        playArea.appendChild(balloon);
+
+        const balloonObj = {
+            el: balloon,
+            isBaku: isBaku,
+            pair: pairChoice,
+            bottom: -125,
+            speed: 1.2 + (gameState.currentLevel * 0.22)
+        };
+
+        gameState.activeBalloons.push(balloonObj);
+
+        const handlePop = (e) => {
+            e.preventDefault();
+            if (!gameState.isPlaying) return;
+            shootCannonAt(balloon);
+            createPopEffect(balloon);
+            setTimeout(() => popBalloon(balloonObj, true), 120);
+        };
+
+        balloon.addEventListener('touchstart', handlePop, { passive: false });
+        balloon.addEventListener('mousedown', handlePop);
+    }
+
+    // Loop Animasi Pergerakan Balon
+    // Gerakan menggunakan transform agar browser HP dapat memprosesnya
+    // di compositor tanpa memicu layout ulang setiap frame.
+    let lastFrameTime = performance.now();
+
+    function updateGameLoop(timestamp) {
+        const deltaTime = Math.min((timestamp - lastFrameTime) / 16.6667, 2);
+        lastFrameTime = timestamp;
+
+        if (gameState.isPlaying && gameState.activeBalloons.length > 0) {
+            const activeBalloons = gameState.activeBalloons;
+            const playHeight = playArea.clientHeight;
+
+            for (let i = activeBalloons.length - 1; i >= 0; i--) {
+                const b = activeBalloons[i];
+                b.bottom += b.speed * deltaTime;
+
+                // Hanya mengubah transform (lebih ringan daripada mengubah bottom).
+                b.el.style.transform = `translate3d(0, ${-(b.bottom + 125)}px, 0)`;
+
+                // Balon lolos ke atas layar
+                if (b.bottom > playHeight) {
+                    popBalloon(b, false);
+                }
+            }
+        }
+        requestAnimationFrame(updateGameLoop);
+    }
+    requestAnimationFrame(updateGameLoop);
+
+    // Animasi peluru dari meriam menuju balon
+    function shootCannonAt(balloonEl) {
+        const cannon = document.getElementById('game-cannon');
+        if (!cannon || !balloonEl || !playArea.contains(balloonEl)) return;
+
+        const areaRect = playArea.getBoundingClientRect();
+        const cannonRect = cannon.getBoundingClientRect();
+        const targetRect = balloonEl.getBoundingClientRect();
+
+        const shot = document.createElement('div');
+        shot.className = 'cannon-shot';
+        const sx = cannonRect.left + cannonRect.width / 2 - areaRect.left;
+        const sy = cannonRect.top + 22 - areaRect.top;
+        const tx = targetRect.left + targetRect.width / 2 - areaRect.left;
+        const ty = targetRect.top + targetRect.height / 2 - areaRect.top;
+        shot.style.left = `${sx - 6}px`;
+        shot.style.top = `${sy - 6}px`;
+        playArea.appendChild(shot);
+
+        const duration = Math.max(90, Math.min(260, Math.hypot(tx - sx, ty - sy) * 0.75));
+        const start = performance.now();
+        function animateShot(now) {
+            const t = Math.min(1, (now - start) / duration);
+            const ease = 1 - Math.pow(1 - t, 3);
+            shot.style.transform = `translate3d(${(tx - sx) * ease}px, ${(ty - sy) * ease}px, 0) scale(${1 - .25 * ease})`;
+            shot.style.opacity = String(1 - Math.max(0, t - .82) / .18);
+            if (t < 1) requestAnimationFrame(animateShot);
+            else shot.remove();
+        }
+        requestAnimationFrame(animateShot);
+    }
+
+    // Efek ledakan ringan agar tetap ramah untuk HP
+    function createPopEffect(balloonEl) {
+        if (!balloonEl || !playArea.contains(balloonEl)) return;
+        const rect = balloonEl.getBoundingClientRect();
+        const areaRect = playArea.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2 - areaRect.left;
+        const cy = rect.top + rect.height / 2 - areaRect.top;
+
+        balloonEl.classList.add('pop-effect');
+
+        const count = 8;
+        for (let i = 0; i < count; i++) {
+            const spark = document.createElement('div');
+            spark.className = 'pop-spark';
+            spark.style.left = `${cx - 3.5}px`;
+            spark.style.top = `${cy - 3.5}px`;
+            playArea.appendChild(spark);
+            const angle = (Math.PI * 2 * i / count) + Math.random() * .35;
+            const distance = 24 + Math.random() * 24;
+            const start = performance.now();
+            const duration = 260 + Math.random() * 100;
+            function animateSpark(now) {
+                const t = Math.min(1, (now - start) / duration);
+                const ease = 1 - Math.pow(1 - t, 2);
+                spark.style.transform = `translate3d(${Math.cos(angle) * distance * ease}px, ${Math.sin(angle) * distance * ease}px, 0) scale(${1 - t})`;
+                spark.style.opacity = String(1 - t);
+                if (t < 1) requestAnimationFrame(animateSpark);
+                else spark.remove();
+            }
+            requestAnimationFrame(animateSpark);
+        }
+    }
+
+    // Tembak / Pop Balon
+    function popBalloon(balloonObj, shotByPlayer) {
+        const index = gameState.activeBalloons.indexOf(balloonObj);
+        if (index === -1) return;
+
+        gameState.activeBalloons.splice(index, 1);
+        balloonObj.el.remove();
+
+        if (shotByPlayer) {
+            if (balloonObj.isBaku) {
+                // Tembak BAKU = BENAR
+                gameState.score += 10;
+                playSound(650, 'sine', 0.12);
+            } else {
+                // Tembak TIDAK BAKU = SALAH (NYAWA BERKURANG 1)
+                gameState.lives--;
+                updateLivesUI();
+                playSound(150, 'sawtooth', 0.3);
+                recordError(balloonObj.pair, `Kamu menembak kata TIDAK BAKU '${balloonObj.pair.tidak}'. Harusnya dibiarkan lewat.`);
+                
+                if (gameState.lives <= 0) {
+                    finishLevel(false); // Game Over karena nyawa habis
+                    return;
+                }
+            }
+        } else {
+            // Balon Lolos Ke Atas
+            if (balloonObj.isBaku) {
+                // Kata BAKU TERLEWAT = SALAH (NYAWA BERKURANG 1)
+                gameState.lives--;
+                updateLivesUI();
+                playSound(180, 'triangle', 0.25);
+                recordError(balloonObj.pair, `Kata BAKU '${balloonObj.pair.baku}' terlewat tidak kamu tembak.`);
+
+                if (gameState.lives <= 0) {
+                    finishLevel(false); // Game Over
+                    return;
+                }
+            } else {
+                // Kata TIDAK BAKU TERLEWAT = BENAR
+                gameState.score += 10;
+                playSound(650, 'sine', 0.12);
+            }
+        }
+
+        document.getElementById('disp-score').innerText = gameState.score;
+
+        // Cek Kelulusan Level
+        if (gameState.totalSpawned >= gameState.targetBalloons && gameState.activeBalloons.length === 0) {
+            finishLevel(true);
+        }
+    }
+
+    // Record Pembahasan Kesalahan
+    function recordError(pair, reason) {
+        const exists = gameState.wrongEvaluations.some(e => e.pair.baku === pair.baku);
+        if (!exists) {
+            gameState.wrongEvaluations.push({ pair: pair, reason: reason });
+        }
+    }
+
+    // Akhiri Level (Lulus atau Game Over)
+    function finishLevel(isSuccess) {
+        gameState.isPlaying = false;
+        clearInterval(gameState.spawnTimer);
+        playArea.innerHTML = '';
+
+        const titleEl = document.getElementById('result-title');
+        const subEl = document.getElementById('result-subtitle');
+        const scoreEl = document.getElementById('result-score');
+        const evalSection = document.getElementById('eval-section');
+        const evalList = document.getElementById('eval-list');
+        const btnNext = document.getElementById('btn-next');
+
+        scoreEl.innerText = gameState.score;
+        evalList.innerHTML = '';
+
+        if (!isSuccess) {
+            // GAGAL / NYAWA HABIS
+            titleEl.innerText = "💔 PERMAINAN BERAKHIR";
+            titleEl.style.color = "#f72585";
+            subEl.innerText = `Nyawamu habis di Level ${gameState.currentLevel}. Pelajari pembahasan di bawah ini!`;
+            btnNext.innerText = `🔄 COBA LAGI LEVEL ${gameState.currentLevel}`;
+            document.getElementById('btn-exit').classList.remove('hidden');
+        } else if (gameState.currentLevel === 8) {
+            // TAMAT LEVEL 8
+            titleEl.innerText = "👑 LUAR BIASA! KAMU TAMAT!";
+            titleEl.style.color = "#FFD700";
+            subEl.innerText = "Selamat! Kamu telah berhasil menuntaskan seluruh 8 Level permainan!";
+            btnNext.innerText = "🔄 MAIN LAGI DARI LEVEL 1";
+            document.getElementById('btn-exit').classList.remove('hidden');
+        } else {
+            // LULUS LEVEL
+            titleEl.innerText = `LEVEL ${gameState.currentLevel} SELESAI!`;
+            titleEl.style.color = "#00f5d4";
+            subEl.innerText = "Ulasan Jawaban & Pembahasan Materi KBBI";
+            btnNext.innerText = `LANJUT KE LEVEL ${gameState.currentLevel + 1} ▶`;
+        }
+
+        // Tampilkan Hanya Pembahasan Kata yang Salah
+        if (gameState.wrongEvaluations.length > 0) {
+            evalSection.style.display = 'block';
+            gameState.wrongEvaluations.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'eval-item';
+                div.innerHTML = `
+                    <div class="eval-word">Baku: ${item.pair.baku} | Tidak Baku: ${item.pair.tidak}</div>
+                    <div style="color:#f72585; font-size:11px; margin-top:2px;">⚠️ ${item.reason}</div>
+                    <div class="eval-desc">📚 <b>Pembahasan KBBI:</b> ${item.pair.ket}</div>
+                `;
+                evalList.appendChild(div);
+            });
+        } else {
+            evalSection.style.display = 'block';
+            evalList.innerHTML = `
+                <div class="eval-item correct" style="text-align:center; padding:15px;">
+                    <span style="font-size:24px;">🏆</span><br>
+                    <b style="color:#00f5d4;">SEMPURNA! Tepat 100%!</b><br>
+                    <span style="color:#e0e1dd; font-size:11px;">Kamu menjawab semua kata dengan sangat presisi tanpa kehilangan nyawa!</span>
+                </div>
+            `;
+        }
+
+        // Kirim Rekap Data ke Google Sheets hanya jika gagal atau tamat Level 8
+        if (!isSuccess) {
+            const statusNote = `Gagal di Level ${gameState.currentLevel}`;
+            sendDataToGoogleSheets(statusNote);
+        } else if (gameState.currentLevel === 8) {
+            sendDataToGoogleSheets("TAMAT 8 LEVEL");
+        }
+
+        screens.result.classList.remove('hidden');
+    }
+
+    // Tombol Action Lanjut / Ulang
+    function nextAction() {
+        const btnText = document.getElementById('btn-next').innerText;
+        if (btnText.includes("COBA LAGI")) {
+            startLevel(gameState.currentLevel);
+        } else if (btnText.includes("MAIN LAGI DARI LEVEL 1")) {
+            gameState.score = 0;
+            startLevel(1);
+        } else {
+            startLevel(gameState.currentLevel + 1);
+        }
+    }
+
+    // Kembali ke Halaman Awal
+    function exitToStart() {
+        gameState.isPlaying = false;
+        if (gameState.spawnTimer) clearInterval(gameState.spawnTimer);
+        gameState.spawnTimer = null;
+        playArea.innerHTML = '';
+        screens.result.classList.add('hidden');
+        document.getElementById('btn-exit').classList.add('hidden');
+        screens.start.classList.remove('hidden');
+    }
+
+    // Kirim Data ke Google Sheets
+    function sendDataToGoogleSheets(statusNote) {
+        if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_URL")) return;
+
+        const payload = {
+            nama: gameState.playerNama,
+            kelas: gameState.playerKelas,
+            level: gameState.currentLevel,
+            skor: gameState.score,
+            status: statusNote
+        };
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).catch(err => console.error(err));
+    }
+</script>
+</body>
+</html>
